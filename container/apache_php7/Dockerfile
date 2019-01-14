@@ -14,7 +14,7 @@ RUN apt-get update -y && \
   apt-get autoremove -y && \
   rm -rf /var/lib/apt/lists/* && \
   echo "export TERM=xterm" >> /root/.bashrc
-
+RUN apt-get install -y openssl
 # install php extensions
 RUN docker-php-ext-configure gd --with-jpeg-dir=/usr/local/ && \
   docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql gd
@@ -32,8 +32,11 @@ COPY ./entrypoint.d/* /entrypoint.d/
 RUN chmod 777 /entrypoint.sh && chmod 777 /entrypoint.d/*
 
 # apache stuff
-RUN /usr/sbin/a2enmod rewrite && /usr/sbin/a2enmod headers && /usr/sbin/a2enmod expires
+RUN /usr/sbin/a2enmod rewrite && /usr/sbin/a2enmod headers && /usr/sbin/a2enmod expires && a2enmod ssl
 COPY ./files/000-default.conf /etc/apache2/sites-available/000-default.conf
+#COPY ./files/standart-ssl.conf /etc/apache2/sites-available/standart-ssl.conf
+COPY ./files/ssl.crt /etc/apache2/ssl/ssl.crt
+COPY ./files/ssl.key /etc/apache2/ssl/ssl.key
 
 # oxid stuff
 COPY ./files/config.inc.php /var/www/config.inc.php
